@@ -1,0 +1,19 @@
+<?php 
+
+namespace SysCore\PCrate;
+
+class PCrate {
+    
+    private static $crates = [];
+    
+    public static function initCrates() {}
+    
+    public static function getCrates() {}
+    
+    public static function isCrate() {}
+    
+    public static function openCrate() {}
+    
+    public static function getCrate() {}
+    
+}

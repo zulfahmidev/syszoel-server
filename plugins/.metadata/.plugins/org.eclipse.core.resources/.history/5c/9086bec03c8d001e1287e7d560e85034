@@ -1,0 +1,21 @@
+<?php
+
+namespace SysCore\PFight;
+
+use pocketmine\player\Player;
+use SysCore\PData\PData;
+
+class PFight {
+    
+    public static $matchings = [];
+    
+    public static function join(Player $player, $arenaId) {
+        $arena = self::getArena($arenaId);
+        return $arena->join($player);
+    }
+    
+    public static function getArena($arenaId) {}
+    
+    public static function getArenas() {}
+    
+}

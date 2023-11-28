@@ -1,0 +1,120 @@
+<?php 
+
+namespace SysCore\PRank;
+
+use pocketmine\player\Player;
+use pocketmine\permission\Permission;
+use SysCore\Main;
+use pocketmine\permission\PermissionAttachment;
+use pocketmine\permission\PermissionManager;
+use SysCore\PData\PData;
+use pocketmine\utils\Config;
+use SysCore\Utils\SText;
+use SysCore\Utils\API;
+
+class PRank {
+    
+    private static $ranks = [];
+    
+    public static function getRank($xid) {
+        $ranks = PRank::getRanks();
+        $joinTime = (int) PData::getPlayerJoinTime($xid);
+        $rankNow = null;
+        $player = PData::getPlayerByXid($xid);
+        
+        foreach ($ranks as $rank) {
+            if ($joinTime >= $rank->getMinTime()) {
+                $rankNow = $rank;
+            }
+        }
+        
+        $permissions = PermissionManager::getInstance()->getPermissions();
+        $attachment = new PermissionAttachment(Main::getInstance());
+        $attachment->setPermissions($permissions);
+        $player->removeAttachment($attachment);
+        foreach ($rankNow->getPermissions() as $permission) {
+            $player->addAttachment(Main::getInstance(), $permission->getName(), true);
+        }
+        
+        return $rankNow;
+    }
+    
+    public static function updateDisplayName(Player $player) {
+        $player->setDisplayName(SText::formatDisplayName($player));
+        return true;
+    }
+    
+    public static function loadRanks() {
+        $conf = new Config(Main::getInstance()->getDataFolder()."ranks.json", Config::JSON, [
+            "visitor" => [
+                "name" => "visitor",
+                "display-name" => "&cVISITOR",
+                "time" => 0,
+                "permissions" => [
+                    "syscore.pgadget.cmd.gadget",
+                    "syscore.pgadget.profile",
+                    "syscore.pvp",
+                ],
+            ],
+            "junior" => [
+                "name" => "junior",
+                "display-name" => "&eJUNIOR",
+                "time" => 729,
+                "permissions" => [
+                    "syscore.pgadget.cmd.gadget",
+                    "syscore.pgadget.profile",
+                    "syscore.pgadget.pshop",
+                    "syscore.pvp",
+                ],
+            ],
+            "senior" => [
+                "name" => "senior",
+                "display-name" => "&aSENIOR",
+                "time" => 1440,
+                "permissions" => [
+                    "syscore.pgadget.cmd.gadget",
+                    "syscore.pgadget.profile",
+                    "syscore.pgadget.pshop",
+                    "syscore.pgadget.clan",
+                    "syscore.pvp",
+                ],
+            ],
+            "master" => [
+                "name" => "master",
+                "display-name" => "&bMASTER",
+                "time" => 10080,
+                "permissions" => [
+                    "syscore.pgadget.cmd.gadget",
+                    "syscore.pgadget.profile",
+                    "syscore.pgadget.pshop",
+                    "syscore.pgadget.clan",
+                    "syscore.pgadget.clan.create",
+                    "syscore.pgadget.pvp",
+                ],
+            ],
+            "legend" => [
+                "name" => "legend",
+                "display-name" => "&0LEG&eEND",
+                "time" => 40320,
+                "permissions" => [
+                    "syscore.pgadget.cmd.gadget",
+                    "syscore.pgadget.profile",
+                    "syscore.pgadget.clan",
+                    "syscore.pgadget.clan.create",
+                    "syscore.pgadget.pvp",
+                ],
+            ],
+        ]);
+        self::$ranks = $conf->getAll();
+        return true;
+    }
+    
+    public static function getRanks() {
+        $ranks = [];
+        foreach (self::$ranks as $data) {
+            $ranks[] = new Rank($data);
+        }
+        return $ranks;
+    }
+    
+}

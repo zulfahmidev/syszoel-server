@@ -1,0 +1,59 @@
+<?php 
+
+namespace SysCore\PRank;
+
+use pocketmine\player\Player;
+use pocketmine\permission\Permission;
+use SysCore\Main;
+use pocketmine\permission\PermissionAttachment;
+use pocketmine\permission\PermissionManager;
+use SysCore\PData\PData;
+use pocketmine\utils\Config;
+use SysCore\Utils\SText;
+
+class PRank {
+    
+    private static $ranks = [];
+    
+    public static function getRank($xid) {
+        return new Rank(self::$ranks["guest"]);
+        $rankName = PData::get($xid, "rank");
+        return new Rank(self::$badges[$rankName]);
+    }
+    
+    public static function setRank($xid, $badgeId)  {
+        
+    }
+    
+    public static function updateDisplayName(Player $player) {
+        $player->setDisplayName(SText::formatDisplayName($player));
+        return true;
+    }
+    
+    public static function loadRanks() {
+        $conf = new Config(Main::getInstance()->getDataFolder()."ranks.json", Config::JSON, [
+            "guest" => [
+                "name" => "guest",
+                "display-name" => "&bGUEST",
+                "permissions" => [
+                    "syscore.pgadget.cmd.gadget",
+                    "syscore.pgadget.profile",
+                ],
+            ],
+        ]);
+        self::$ranks = $conf->getAll();
+        return true;
+    }
+    
+    public static function initAttachments(Player $player) {
+        $rank = self::getRank($player->getXuid());
+        $permissions = PermissionManager::getInstance()->getPermissions();
+        $attachment = new PermissionAttachment(Main::getInstance());
+        $attachment->setPermissions($permissions);
+        $player->removeAttachment($attachment);
+        foreach ($rank->getPermissions() as $permission) {
+                $player->addAttachment(Main::getInstance(), $permission->getName(), true);
+        }
+    }
+    
+}

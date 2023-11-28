@@ -1,0 +1,29 @@
+<?php
+
+namespace SysCore\PFight;
+
+use pocketmine\player\Player;
+
+class PFight {
+    
+    public static $matchings = [];
+    
+    public function join(Player $player) {
+        if (!in_array($player->getXuid(), self::$matchings)) {
+            self::$matches[] = $player->getXuid();
+            return true;
+        }
+        return false;
+    }
+    
+    public function getArenas() {}
+    
+    public function getOfflineArena() {
+        
+    }
+    
+    public function getOnlineArena() {
+        
+    }
+    
+}

@@ -1,0 +1,13 @@
+/bin
+/plugin_data
+/players
+/crashdumps
+banned-ips.txt
+banned-players.txt
+ops.txt
+plugin_list.yml
+pocketmine.yml
+server.log
+server.properties
+start.sh
+white-list.txt

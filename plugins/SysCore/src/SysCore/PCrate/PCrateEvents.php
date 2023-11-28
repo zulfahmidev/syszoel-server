@@ -1,0 +1,22 @@
+<?php 
+
+namespace SysCore\PCrate;
+
+use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerInteractEvent;
+
+class PCrateEvents implements Listener {
+    
+    public function onInteract(PlayerInteractEvent $e) {
+        
+        $player = $e->getPlayer();
+        $block = $e->getBlock();
+        
+        if (PCrate::isCrate($block)) {
+            $e->cancel();
+            PCrate::openCrate($player, $block);
+        }
+        
+    }
+    
+}

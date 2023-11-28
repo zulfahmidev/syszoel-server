@@ -1,0 +1,97 @@
+<?php 
+
+namespace SysCore\PData;
+
+use pocketmine\player\Player;
+use SysCore\Utils\API;
+use syscore\Main;
+use SysCore\PRank\PRank;
+
+class PData {
+    
+    private static $data = [];
+    private static $joinTime = [];
+    
+    public static function get(string $xid, string $key) {
+        if (isset(self::$data[$xid])) {
+            return self::$data[$xid][$key];
+        }else if(($data = self::fetchData($xid)) != null) {
+            if (isset($data['status'])) {
+                if ($data['status'] == 200) {
+                    return $data['data'][$key];
+                }
+            }
+        }
+        return null;
+    }
+    
+    public static function init(Player $player) {
+        self::$data[$player->getXuid()] = self::initPlayer($player->getXuid(), $player->getName());
+        self::$joinTime[$player->getXuid()] = time();
+        return true;
+    }
+    
+    public static function getPlayerJoinTime($xid) {
+        if (isset(self::$joinTime[$xid])) {
+            $time = time() - self::$joinTime[$xid];
+            $ptime = self::get($xid, "joinTime");
+            return floor($time/60)+$ptime;
+        }
+        return floor((int) self::get($xid, "joinTime") / 60);
+    }
+    
+    public static function getPlayerByXid($xid) {
+        $players = Main::getInstance()->getServer()->getOnlinePlayers();
+        
+        foreach ($players as $player) {
+            if ($player->getXuid() == $xid) {
+                return $player;
+            }
+        }
+        return null;
+    }
+    
+    public static function close($xid) {
+        
+        $res = API::post("/player/$xid/update-data", [
+            "joinTime" => self::getPlayerJoinTime($xid),
+        ]);
+        unset(self::$data[$xid]);
+        unset(self::$joinTime[$xid]);
+        return true;
+    }
+    
+    public static function update(string $xid) {
+        if (isset(self::$data[$xid])) {
+            $data = self::$data[$xid];
+            self::$data[$xid] = self::fetchData($data['xid']);
+            return true;
+        }
+        return false;
+    }
+    
+    private static function fetchData(string $xid) {
+        $res = API::get("/player/$xid");
+        if (isset($res['status'])) {
+            if ($res['status'] == 200) {
+                return $res['data'];
+            }
+        }
+        return null;
+    }
+    
+    private static function initPlayer(string $xid, string $nickname) {
+        $res = API::post("/player/init", [
+            "xid" => $xid,
+            "nickname" => $nickname
+        ]);
+        if (isset($res['status'])) {
+            if ($res['status'] == 200) {
+                return $res['data'];
+            }
+            return null;
+        }
+        return API::logResponse($res);
+    }
+    
+}

@@ -1,0 +1,87 @@
+<?php 
+
+namespace SysCore\PFight\UIs;
+
+use SysCore\Utils\SForm\SForm;
+use SysCore\PGadget\PGadget;
+use SysCore\Utils\SForm\SimpleForm;
+use pocketmine\player\Player;
+use SysCore\PShop\Shop;
+use pocketmine\item\Item;
+use pocketmine\item\ItemIdentifier;
+use pocketmine\block\Barrel;
+use pocketmine\item\ItemBlock;
+use pocketmine\item\VanillaItems;
+use pocketmine\block\VanillaBlocks;
+use SysCore\PFight\PFight;
+
+class PFightApp extends SForm {
+    
+    private $data = [];
+    private $gadget;
+    
+    public function __construct(PGadget $gadget, array $data = []) {
+        $this->gadget = $gadget;
+        $this->data = $data;
+    }
+    
+    public function getStatus($phase) {
+        switch ($phase) {
+            case 0: 
+                return "Offline";
+            case 1:
+                return "Matching";
+            case 2:
+                return "Started";
+            case 3:
+                return "Reseting";
+        }
+    }
+    
+    public function open() {
+        $form = new SimpleForm(function(Player $player, $data) {
+            if (is_null($data)) return false;
+            if ($data == 0) return $this->gadget->back();
+            $this->data['item'] = $this->getItems()[$data-1]['item'];
+            $this->data['count'] = $this->getItems()[$data-1]['count'];
+            $this->gadget->open('pshop-itemmenu', $this->data);
+        });
+        $form->setTitle($this->formatTitle("PVP"));
+        $form->addButton($this->formatButton("BACK"));
+        foreach (PFight::getArenas() as $arena) {
+            $form->addButton($arena->getName() . " : " . $this->getStatus($arena->getPhase()));
+        }
+        $form->sendToPlayer($this->gadget->getPlayer());
+    }
+    
+    public function ifNotInArena() {
+        $form = new SimpleForm(function(Player $player, $data) {
+            if (is_null($data)) return false;
+            if ($data == 0) return $this->gadget->back();
+            $this->data['item'] = $this->getItems()[$data-1]['item'];
+            $this->data['count'] = $this->getItems()[$data-1]['count'];
+            $this->gadget->open('pshop-itemmenu', $this->data);
+        });
+        $form->setTitle($this->formatTitle("PVP"));
+        $form->addButton($this->formatButton("BACK"));
+        foreach (PFight::getArenas() as $arena) {
+            $form->addButton($arena->getName() . " : " . $this->getStatus($arena->getPhase()));
+        }
+        $form->sendToPlayer($this->gadget->getPlayer());
+    }
+    
+    public function ifInArena() {
+        $form = new SimpleForm(function(Player $player, $data) {
+            if (is_null($data)) return false;
+            if ($data == 0) return $this->gadget->back();
+            $this->data['item'] = $this->getItems()[$data-1]['item'];
+            $this->data['count'] = $this->getItems()[$data-1]['count'];
+            $this->gadget->open('pshop-itemmenu', $this->data);
+        });
+        $form->setTitle($this->formatTitle("PVP"));
+        $form->addButton($this->formatButton("BACK"));
+        $form->addButton($this->formatButton("Cancel"));
+        $form->sendToPlayer($this->gadget->getPlayer());
+    }
+    
+}

@@ -1,0 +1,37 @@
+<?php 
+
+namespace SysCore\PCrate;
+
+use pocketmine\block\Chest;
+use pocketmine\world\Position;
+use SysCore\Main;
+
+class PCrate {
+    
+    private static $crates = [];
+    
+    public static function initCrates() {
+        self::$crates = [
+            
+        ];
+    }
+    
+    public static function getCrates() {
+        return self::getCrates();
+    }
+    
+    public static function isCrate($chest) {
+        foreach (self::$crates as $crate) {
+            if ($chest instanceof Chest) {
+                $pos = $crate['position'];
+                $world = Main::getInstance()->getServer()->getWorldManager()->getWorldByName($pos[3]);
+                $chest->getPosition()->equals(new Position($pos[0], $pos[1], $pos[2], $world));
+            }
+        }
+    }
+    
+    public static function openCrate() {}
+    
+    public static function getCrate() {}
+    
+}

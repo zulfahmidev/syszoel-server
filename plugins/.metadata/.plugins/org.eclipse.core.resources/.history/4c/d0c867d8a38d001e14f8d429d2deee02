@@ -1,0 +1,99 @@
+<?php
+
+namespace SysCore\PClan;
+
+use pocketmine\player\Player;
+
+class Clan {
+    
+    private $clanId;
+    private $data;
+    
+    public function __construct($clanId) {
+        $this->clanId = $clanId;
+        $this->data = $this->initData();
+    }
+    
+    public function initData() {
+        return [
+            "id" => 1,
+            "name" => "clan 1",
+            "code-name" => "cl1",
+            "founder_xid" => "1231312312312",
+            "members" => [
+                [
+                    "id" => 1,
+                    "player_xid" => "1skjdlaksj"
+                ]
+            ]
+        ];
+    }
+    
+    public function getId() {
+        return $this->clanId;
+    }
+    
+    public function getName() {
+        return $this->data['name'];
+    }
+    
+    public function getCodeName() {
+        return $this->data['code-name'];
+    }
+    
+    public function getFounderXid() {
+        return $this->data['founder_xid'];
+    }
+    
+    public function getMembersData() {
+        return array_map(function($v) {
+            return [
+                "player_xid" => $v['player_xid'],
+                "clan_role_id" => $v['clan_role_id'],
+            ];
+        }, $this->data['members']);
+    }
+    
+    public function isMember($xid) {
+        foreach ($this->data['members'] as $v) {
+            if ($v['player_xid'] == $xid) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public function addMember($xid) {
+        if (!$this->isMember($xid)) {
+            
+            // Request Tambah Anggota
+            
+            // Kembalikan data member
+            return null;
+        }
+        return false;
+    }
+    
+    public function kickMember($xid) {
+        
+        if ($this->isMember($xid)) {
+            
+            // Request Hapus Anggota
+            
+            return true;
+        }
+        return false;
+    }
+    
+    public function leaveClan($xid) {
+        if ($this->isMember($xid)) {
+            
+            // Request Hapus Anggota
+            
+            return true;
+        }
+        return false;
+        
+    }
+    
+}

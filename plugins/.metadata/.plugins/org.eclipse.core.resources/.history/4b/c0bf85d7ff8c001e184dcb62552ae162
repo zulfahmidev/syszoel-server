@@ -1,0 +1,15 @@
+<?php 
+
+namespace SysCore\PChat;
+
+use pocketmine\player\chat\ChatFormatter;
+use SysCore\Utils\SText;
+use pocketmine\lang\Translatable;
+
+class PChatFormat implements ChatFormatter {
+    
+    public function format(string $username, string $message) : Translatable|string {
+        var_dump($username);
+        return SText::formatPlayerMessage($username, $message);
+    }
+}

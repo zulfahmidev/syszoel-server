@@ -1,0 +1,81 @@
+<?php 
+
+namespace SysCore\Utils;
+
+use pocketmine\utils\TextFormat;
+use SysCore\PRank\PRank;
+use pocketmine\player\Player;
+use SysCore\PData\PData;
+
+class SText {
+    
+    private static $lang = 'en';
+    
+    public const FSM_TYPE_INFO = 0;
+    public const FSM_TYPE_SUCCESS = 1;
+    public const FSM_TYPE_ERROR = 2;
+    public const FSM_TYPE_DANGER = 3;
+    
+    public static function formatServerMessage(string $text, int $type = 0, $autoTransalte = false) {
+        $types = ['info', 'success', 'error', 'danger'];
+        $result = '';
+        
+        if ($autoTransalte) {
+            $text = self::translateLang($text);
+        }
+        
+        if (isset($types[$type])) $type = 0;
+        
+        switch ($types[$type]) {
+            case 'info':
+                $result = self::transalteColor("&e[•&fINFO&e•]&f $text");
+                break;
+        }
+        return $result;
+    }
+    
+    public static function formatPlayerMessage($xid, $text) {
+        $rank = PRank::getRank($xid);
+        $player = PData::getPlayerByXid($xid);
+        return self::transalteColor("&f[• ".$rank->getDisplayName()." &f•] ".$player->getName()." : &7$text");
+    }
+    
+    public static function formatDisplayName(Player $player) {
+        $rank = PRank::getRank($player->getXuid());
+        $displayRankName = $rank->getDisplayName();
+        $name = $player->getName();
+        return self::transalteColor("&e• $displayRankName &r&e• &f $name");
+    }
+    
+    public static function transalteColor($text) {
+        return TextFormat::colorize($text);      
+    }
+    
+    public static function translateLang($key) {
+        if (isset(self::texts()[$key])) {
+            return self::texts()[$key];
+        }
+        return "NO-TEXT";
+    }
+    
+    public static function getLang() {
+        return self::$lang;
+    }
+    
+    public static function setLang(string $lang) {
+        $langs = ['en'];
+        if (in_array($lang, $langs)) {
+            self::$lang = strtolower($lang);
+            return true;
+        }
+        return false;
+    }
+    
+    public static function texts() {
+        return [
+            "player-join-message" => "Selamat datang di SysCore Network.",
+            "sender-not-player" => "Anda tidak dapat menggunakan perintah ini di console."
+        ];
+    }
+    
+}

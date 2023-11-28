@@ -1,0 +1,30 @@
+<?php 
+
+namespace SysCore\PFight;
+
+use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerDeathEvent;
+use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\player\PlayerChatEvent;
+
+class PFightEvents implements Listener {
+    
+    public function onDeath(PlayerDeathEvent $e) {
+        $player = $e->getPlayer();
+     
+        if (($arena = PFight::getPlayerArena($player))) {
+            if ($arena instanceof Arena) {
+                $arena->onPlayerLost($player);
+            }
+        }
+    }
+    
+    public function onChat(PlayerChatEvent $e) {
+        $player = $e->getPlayer();
+        
+        if (($arena = PFight::getPlayerArena($player))) {
+            $e->cancel();
+        }
+    }
+    
+}

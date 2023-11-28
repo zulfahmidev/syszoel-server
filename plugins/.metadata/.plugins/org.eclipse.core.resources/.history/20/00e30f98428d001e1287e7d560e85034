@@ -1,0 +1,72 @@
+<?php
+
+namespace SysCore\PFight;
+
+use pocketmine\player\Player;
+use SysCore\PData\PData;
+use pocketmine\utils\Config;
+use SysCore\Main;
+
+class PFight {
+    
+    private static $arenas = [];
+    
+    public static function initArenas() {
+        $conf = new Config(Main::getInstance()->getDataFolder()."arenas.json", Config::JSON, [
+            "arena1" => [
+                "id" => "arena1",
+                "name" => "arena 1",
+                "max-player" => 2,
+                "positions" => [
+                    [353,65,245,"world"],
+                    [358,65,239,"world"],
+                ],
+                "reward" => 1000,
+                "time-limit" => 120
+            ]
+        ]);
+        
+        foreach ($conf->getAll() as $arenaId => $data) {
+            self::$arenas[$arenaId] = new Arena($arenaId, $data);
+        }
+    }
+    
+    public static function join(Player $player, $arenaId) {
+        $arena = self::getArena($arenaId);
+        return $arena->join($player);
+    }
+    
+    public static function getArena($arenaId) {
+        return self::$arenas[$arenaId];
+    }
+    
+    public static function getArenas() {
+        return self::$arenas;
+    }
+    
+    public static function cancel(Player $player) {
+        foreach (self::getArenas() as $arena) {
+            if ($arena->inArena($player)) {
+                $arena->leave($player);
+            }
+        }
+    }
+    
+    public static function inArena(Player $player) {
+        foreach (self::getArenas() as $arena) {
+            if ($arena->inArena($player)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static function getPlayerArena(Player $player) {
+        foreach (self::getArenas() as $arena) {
+            if ($arena->inArena($player)) {
+                return $arena;
+            }
+        }
+        return null;
+    }
+}

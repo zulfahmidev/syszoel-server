@@ -1,0 +1,84 @@
+<?php 
+
+namespace SysCore\PCrate;
+
+use pocketmine\block\Chest;
+use pocketmine\world\Position;
+use SysCore\Main;
+use pocketmine\player\Player;
+use pocketmine\item\Item;
+use pocketmine\network\mcpe\InventoryManager;
+use pocketmine\item\ItemBlock;
+use pocketmine\item\VanillaItems;
+use pocketmine\block\inventory\ChestInventory;
+use pocketmine\block\VanillaBlocks;
+
+class PCrate {
+    
+    private static $crates = [];
+    
+    public static function initCrates() {
+        self::$crates = [
+            [
+                "name" => "Crate 1",
+                "position" => [0,0,0,'world']
+            ]
+        ];
+    }
+    
+    public static function getCrates() {
+        return self::getCrates();
+    }
+    
+    public static function isCrate($chest) {
+        return !is_null(self::getCrate($chest));
+    }
+    
+    public static function openCrate(Player $player, $chest) {
+        if (($crate = self::getCrate($chest))) {
+            if (true) { // Check have key or not
+                
+                $rewards = self::getRewards($crate);
+                
+                $p = $player->getPosition();
+                $p->y = 200;
+                while (!is_null($p->world->getTile($p))) {
+                    $p->y++;
+                }
+                $player->getWorld()->setBlockAt($p->x,$p->y,$p->z, VanillaBlocks::CHEST());
+                $inv = new ChestInventory($p);
+                
+                foreach (VanillaItems::getAll() as $item) {
+                    foreach ($rewards as $r) {
+                        if (strtolower($r['item-name']) == strtolower($item->getName())) {
+                            $item->setCount($r['item-count']);
+                            $inv->addItem($item);
+                        }
+                    }
+                }
+                
+                $player->setCurrentWindow($inv);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private static function getRewards($crate) {
+        return [];
+    }
+    
+    public static function getCrate($chest) {
+        foreach (self::$crates as $crate) {
+            if ($chest instanceof Chest) {
+                $pos = $crate['position'];
+                $world = Main::getInstance()->getServer()->getWorldManager()->getWorldByName($pos[3]);
+                if ($chest->getPosition()->equals(new Position($pos[0], $pos[1], $pos[2], $world))) {
+                    return $crate;
+                }
+            }
+        }
+        return null;
+    }
+    
+}

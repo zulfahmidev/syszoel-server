@@ -1,0 +1,21 @@
+<?php
+
+namespace SysCore\PFight;
+
+use pocketmine\scheduler\Task;
+
+class Session extends Task {
+    
+    private $arena;
+    
+    public function __construct(Arena $arena) {
+        $this->arena = $arena;
+    }
+    
+    public function onRun(): void {
+        $arena = $this->arena;
+        $arena->sessionTime = time()-$arena->startedAt;
+        
+    }
+    
+}

@@ -1,0 +1,28 @@
+<?php 
+
+namespace SysCore\PRank;
+
+use pocketmine\scheduler\Task;
+use SysCore\Main;
+use SysCore\PData\PData;
+
+class TimeRank extends Task {
+    
+    public function onRun(): void
+    {
+        $ranks = PRank::getRanks();
+        $players = Main::getInstance()->getServer()->getOnlinePlayers();
+        foreach ($players as $player) {
+            $joinTime = (int) PData::get($player->getXuid(), "join-time");
+            $prank = PRank::getRank($player->getXuid());
+            
+            foreach ($ranks as $rank) {
+                if ($joinTime >= $rank->getMinTime()) {
+                    if ($prank->getName() != $rank->getName()) {
+                        PRank::setRank($player->getXuid(), $rank->getName());
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,39 @@
+<?php
+
+namespace SysCore\PFight;
+
+use pocketmine\player\Player;
+use SysCore\PData\PData;
+
+class PFight {
+    
+    private static $arenas = [];
+    
+    public static function initArenas() {
+        $conf = new Config(Main::getInstance()->getDataFolder()."ranks.json", Config::JSON);
+    }
+    
+    public static function join(Player $player, $arenaId) {
+        $arena = self::getArena($arenaId);
+        return $arena->join($player);
+    }
+    
+    public static function getArena($arenaId) {
+        return self::$arenas[$arenaId];
+    }
+    
+    public static function getArenas() {
+        
+    }
+    
+    public static function cancel(Player $player) {
+        foreach (self::getArenas() as $arena) {
+            if ($arena->inArena($player)) {
+                $arena->leave($player);
+            }
+        }
+    }
+    
+    public static function inArena(Player $player) {}
+    
+}

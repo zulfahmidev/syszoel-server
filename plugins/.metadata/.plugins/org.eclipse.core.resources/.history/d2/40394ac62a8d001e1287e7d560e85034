@@ -1,0 +1,149 @@
+<?php 
+
+namespace SysCore\PShop;
+
+use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerJoinEvent;
+use SysCore\Utils\SText;
+use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\block\Barrel;
+use pocketmine\block\tile\Sign;
+use pocketmine\block\utils\SignText;
+use pocketmine\block\VanillaBlocks;
+use pocketmine\block\WallSign;
+use pocketmine\block\FloorSign;
+use pocketmine\block\BaseSign;
+use pocketmine\event\inventory\InventoryCloseEvent;
+use pocketmine\block\inventory\BarrelInventory;
+use pocketmine\event\block\BlockBreakEvent;
+
+class PShopEvents implements Listener {
+    
+    public static $actions = [];
+    
+    public function onJoin(PlayerJoinEvent $e) {
+        $player = $e->getPlayer();
+        $shop = PShop::initShop($player->getXuid());
+    }
+    
+    public function onClick(PlayerInteractEvent $e) {
+        $player = $e->getPlayer();
+        $block = $e->getBlock();
+        
+        // Action Handling
+        if (isset(self::$actions[$player->getXuid()])) {
+            $action = self::$actions[$player->getXuid()];
+            
+            // Set Sign Action
+            if ($action['name'] == 'set-sign') {
+                $expired = $action['expired'];
+                
+                if (time() > $expired) {
+                    // Send Message Action Is Expired
+                    $player->sendToastNotification("Failed!", "The action is expired.");
+                    unset(self::$actions[$player->getXuid()]);
+                    $action['data']['ui']->open();
+                }else {
+                    if ($block instanceof BaseSign) {
+                        $e->cancel();
+                        $shop = PShop::getShopBySign($block);
+                        if ($shop) {
+                            $player->sendToastNotification("Failed!", "The sign is own by: ".$shop->getOwnerName());
+                            return true;
+                        }
+                        $data = $action['data'];
+                        $shop = $data['shop'];
+                        $shopName = $shop->getName();
+                        $item = $data['item'];
+                        $itemName = $item->getName();
+                        $price = $shop->getItemPrice($itemName);
+                        $stock = $data['count'] > 99 ? "99+" : $data['count'];
+                        $text = new SignText([
+                            "[$shopName]",
+                            "$itemName",
+                            "$price",
+                            "Stock: $stock"
+                        ]);
+                        $pos = $block->getPosition();
+                        $pos->world->setBlock($pos, $block->setText($text));
+                        $shop->setSign($block, $itemName);
+                        unset(self::$actions[$player->getXuid()]);
+                        $player->sendToastNotification("Success!", "Sign successfully setted.");
+                        $action['data']['ui']->open();
+                    }
+                }
+                return false;
+            }
+            
+            // Set Storage Action
+            if ($action['name'] == 'set-storage') {
+                $expired = $action['expired'];
+                
+                if (time() > $expired) {
+                    // Send Message Action Is Expired
+                    $player->sendToastNotification("Failed!", "The action is expired.");
+                    unset(self::$actions[$player->getXuid()]);
+                    $action['data']['ui']->open();
+                }else {
+                    if ($block instanceof Barrel) {
+                        $e->cancel();
+                        $shop = PShop::getShopByStorage($block);
+                        if ($shop) {
+                            $player->sendToastNotification("Failed!", "The storage is own by: ".$shop->getOwnerName());
+                            return true;
+                        }
+                        $data = $action['data'];
+                        $shop = $data['shop'];
+                        $shop->setStorage($block);
+                        unset(self::$actions[$player->getXuid()]);
+                        $player->sendToastNotification("Success!", "Sign successfully setted.");
+                        $action['data']['ui']->open();
+                    }
+                }
+                return false;
+            }
+        }
+    }
+    
+    public function destroyBlock(BlockBreakEvent $e) {
+        $block = $e->getBlock();
+        $player = $e->getPlayer();
+        
+        if ($block instanceof BaseSign) {
+            $shop = PShop::getShopBySign($block);
+            if ($shop) {
+                if ($shop->isOwner($player) || $shop->isHelper($player)) {
+                    $shop->removeSign($block);
+                    $player->sendToastNotification("Success!", "Sign successfully destroyed.");
+                }else {
+                    $e->cancel();
+                    $player->sendToastNotification("Success!", "The storage is own by: ".$shop->getOwnerName());
+                }
+            }
+        }
+        
+        if ($block instanceof Barrel) {
+            $shop = PShop::getShopByStorage($block);
+            if ($shop) {
+                if ($shop->isOwner($player) || $shop->isHelper($player)) {
+                    $shop->removeStorage($block);
+                    $player->sendMessage(SText::formatServerMessage("Storage successfully destroyed."));
+                }else {
+                    $e->cancel();
+                    $player->sendMessage(SText::formatServerMessage("The storage is own by: ".$shop->getOwnerName(), SText::FSM_TYPE_INFO));
+                }
+            }
+        }
+    }
+    
+    public function closeInventory(InventoryCloseEvent $e) {
+        $inv = $e->getInventory();
+        
+        if ($inv instanceof BarrelInventory) {
+            $player = $e->getPlayer();
+            $shop = new Shop($player->getXuid());
+            $shop->loadSigns();
+        }
+    }
+    
+}

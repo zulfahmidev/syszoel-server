@@ -1,0 +1,5 @@
+name: SysCore
+main: SysCore\Main
+version: 1.0.0
+api: 5.0.0
+author: Zulfahmidev

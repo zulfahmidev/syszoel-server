@@ -1,0 +1,49 @@
+<?php
+
+namespace SysCore\PClan;
+
+use pocketmine\player\Player;
+
+class Clan {
+    
+    private $clanId;
+    private $data;
+    
+    public function __construct($clanId) {
+        $this->clanId = $clanId;
+        $this->data = $this->initData();
+    }
+    
+    public function initData() {
+        return [
+            "id" => "clan1",
+            "name" => "clan 1",
+            "leader_id" => "1231312312312",
+        ];
+    }
+    
+    public function getId() {
+        return $this->clanId;
+    }
+    
+    public function getName() {
+        return $this->data['name'];
+    }
+    
+    public function getLeaderXid() {
+        return $this->data['leader_id'];
+    }
+    
+    public function getMembers() {
+        return $this->data['members'];
+    }
+    
+    public function isMember($xid) {
+        foreach ($this->data['members'] as )
+    }
+    
+    public function join() {
+        if ()
+    }
+    
+}

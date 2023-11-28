@@ -1,0 +1,148 @@
+<?php
+
+namespace SysCore;
+
+use SysCore\PChat\PChatEvents;
+use SysCore\PData\PDataEvents;
+use SysCore\PData\Commands\UpdateData;
+use SysCore\PData\UIs\Profile;
+use SysCore\PGadget\MainMenu;
+use SysCore\PGadget\Commands\Gadget;
+use SysCore\PPerms\PPerms;
+use SysCore\PShop\PShop;
+use SysCore\PShop\PShopEvents;
+use SysCore\PShop\UIs\DetailStorage;
+use SysCore\PShop\UIs\ItemMenu;
+use SysCore\PShop\UIs\Items as PShopItems;
+use SysCore\PShop\UIs\PShopApp;
+use SysCore\PShop\UIs\Profile as PShopProfile;
+use SysCore\PShop\UIs\SetPrice;
+use SysCore\PShop\UIs\Settings as PShopSettings;
+use SysCore\PShop\UIs\Storages;
+use SysCore\Utils\SForm\SForm;
+use pocketmine\plugin\PluginBase;
+use SysCore\PRank\PRank;
+use SysCore\PRank\PRankEvents;
+use SysCore\PRank\TimeRank;
+use SysCore\PFight\UIs\PFightApp;
+
+class Main extends PluginBase {
+
+    private static $instance;
+  
+    public function onEnable() : void {
+        self::$instance = $this;
+    
+        //     PlayerPermission::register();
+        $this->initDirs();
+        PPerms::registerPermissions();
+        PRank::loadRanks();
+        $this->registerForms();
+        $this->registerCommands();
+        $this->registerListeners();
+        PShop::loadSigns();
+        $this->registerSchedulers();
+        $this->getLogger()->info('SysCore ready to serve!');
+    }
+    
+    public function initDirs() {
+        $path = Main::getInstance()->getDataFolder();
+        $dirs = [
+            "pshops/"
+        ];
+        foreach ($dirs as $dir) {
+            @mkdir($path.$dir);
+        }
+    }
+    
+    public function registerForms() {
+        $forms = [
+            [
+                "name" => "main-menu",
+                "class" => MainMenu::class
+            ],
+            // PShop
+            [
+                "name" => "pshop-main",
+                "class" => PShopApp::class
+            ],
+            [
+                "name" => "pshop-profile",
+                "class" => PShopProfile::class
+            ],
+            [
+                "name" => "pshop-settings",
+                "class" => PShopSettings::class
+            ],
+            [
+                "name" => "pshop-items",
+                "class" => PShopItems::class
+            ],
+            [
+                "name" => "pshop-itemmenu",
+                "class" => ItemMenu::class
+            ],
+            [
+                "name" => "pshop-setprice",
+                "class" => SetPrice::class
+            ],
+            [
+                "name" => "pshop-storages",
+                "class" => Storages::class
+            ],
+            [
+                "name" => "pshop-detailstorage",
+                "class" => DetailStorage::class
+            ],
+            [
+                "name" => "profile",
+                "class" => Profile::class
+            ],
+            [
+                "name" => "pvp-main",
+                "class" => PFightApp::class
+            ],
+        ];
+        
+        foreach ($forms as $form) {
+            SForm::registerForm($form['name'], $form['class']);
+        }
+    }
+    
+    public function registerCommands() {
+        $commands = [
+            [
+                "name" => "update-data",
+                "object" => new UpdateData()
+            ],
+            [
+                "name" => "gadget",
+                "object" => new Gadget()
+            ],
+        ];
+        foreach ($commands as $command) {
+            $this->getServer()->getCommandMap()->register($command['name'], $command['object']);
+        }
+    }
+    
+    public function registerListeners() {
+        $listeners = [
+            new PDataEvents(),
+            new PShopEvents(),
+            new PChatEvents(),
+            new PRankEvents(),
+        ];
+        foreach ($listeners as $listener) {
+            $this->getServer()->getPluginManager()->registerEvents($listener, $this);
+        }
+    }
+    
+    public function registerSchedulers() {
+        $this->getScheduler()->scheduleRepeatingTask(new TimeRank(), 20);
+    }
+
+    public static function getInstance() {
+        return self::$instance;
+    }
+  
+}

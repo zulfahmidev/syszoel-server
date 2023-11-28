@@ -1,0 +1,17 @@
+<?php 
+
+namespace SysCore\PClan;
+
+use pocketmine\player\Player;
+
+class PClan {
+    
+    public static function getPlayerClan(Player $player) {}
+    
+    public static function getClan($clanId) {}
+    
+    public static function createClan(Player $player, $name) {}
+    
+    public static function deleteClan($clanId) {}
+    
+}

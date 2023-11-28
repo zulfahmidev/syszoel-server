@@ -1,0 +1,9 @@
+<?php 
+
+namespace SysCore\PClan;
+
+class PClan {
+    
+    
+    
+}

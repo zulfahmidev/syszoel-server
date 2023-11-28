@@ -1,0 +1,153 @@
+<?php
+
+namespace SysCore\PFight;
+
+use pocketmine\player\Player;
+use pocketmine\utils\Config;
+use SysCore\Main;
+use pocketmine\world\Position;
+use pocketmine\network\mcpe\protocol\types\GameMode;
+
+class Arena {
+    
+    public $matchings = [];
+    
+    public $arenaId;
+    public $data;
+    public $countdown = 10;
+    public $sessionTime = 0;
+    public $startedAt = 0;
+    public $isStarted = false;
+    public $isReseted = false;
+    public $session = null;
+    
+    public function __construct($arenaId) {
+        $this->arenaId = $arenaId;
+        $conf = new Config(Main::getInstance()->getDataFolder()."ranks.json", Config::JSON);
+        $this->data = $conf->get($arenaId);
+        $data = [
+            "max-player" => 2,
+            "positions" => [
+                [0,0,0,"world"]
+            ],
+        ];
+    }
+    
+    public function join(Player $player) {
+        if (count($this->matchings) < $this->data['max-player']) {
+            $this->matchings[] = $player;
+            
+            // Pesan Berhasil Bergabung
+            
+            if (count($this->matchings) == $this->data['max-player']) {
+                
+                // Pesan Bersiap Untuk Teleport
+                
+                $this->teleportToArena();
+                
+                $this->startGame();
+                
+            }
+        }
+    }
+    
+    public function startGame() {
+        
+        // Pesan Menunggu
+        
+        $this->setupWaitingPlayers();
+
+        $this->startedAt = time();
+        $this->session = Main::getInstance()->getScheduler()->scheduleRepeatingTask(new Session($this), 20);
+    }
+    
+    public function endGame() {
+        $this->isStarted = false;
+        $this->isReseted = true;
+        
+        $this->teleportToSpawn();
+        $this->session->remove();
+        
+        $this->checkWinner();
+        
+        $this->resetArena();
+    }
+    
+    public function checkWinner() {
+        
+        if (count($this->matchings) == 1) {
+            
+            $player = $this->matchings[0];
+            
+            // Pesan Winner
+            
+            $this->sendRewards();
+            
+        } elseif (count($this->matchings) > 1) {
+            
+            foreach ($this->matchings as $player) {
+                if ($player instanceof Player) {
+                    
+                    // Pesan Seri
+                    
+                }
+            }
+        }
+    }
+    
+    public function onPlayerLost($player) {
+        if ($player instanceof Player) {
+            if ($player->isOnline()) {
+                $position = Main::getInstance()->getServer()->getWorldManager()->getWorldByName('world')->getSafeSpawn();
+                $player->teleport($position);
+            }
+        }
+    }
+    
+    public function sendRewards() {
+        
+    }
+    
+    public function resetArena() {
+        
+    }
+    
+    public function setupWaitingPlayers() {
+        foreach ($this->matchings as $player) {
+            if ($player instanceof Player) {
+                $player->setNoClientPredictions(true);
+                $player->setGamemode(GameMode::SURVIVAL);
+                $player->setFlying(false);
+                $player->setHealth(20);
+            }
+        }
+    }
+    
+    public function setupFightPlayers() {
+        foreach ($this->matchings as $player) {
+            if ($player instanceof Player) {
+                $player->setNoClientPredictions(false);
+            }
+        }
+    }
+    
+    public function teleportToArena() {
+        $positions = $this->data['positions'];
+        foreach ($positions as $i => $cord) {
+            $player = $this->matchings[$i];
+            if ($player instanceof Player) {
+                $player->teleport(new Position(...$cord));
+            }
+        }
+        return true;
+    }
+    
+    public function teleportToSpawn() {
+        $position = Main::getInstance()->getServer()->getWorldManager()->getWorldByName('world')->getSafeSpawn();
+        foreach ($positions as $i => $cord) {
+            $player->teleport($position);
+        }
+        return true;
+    }
+    
+}

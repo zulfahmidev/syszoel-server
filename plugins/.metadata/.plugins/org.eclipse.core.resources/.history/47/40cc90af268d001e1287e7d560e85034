@@ -1,0 +1,40 @@
+<?php
+
+namespace SysCore\PFight;
+
+use pocketmine\player\Player;
+use SysCore\PData\PData;
+
+class PFight {
+    
+    public static $matchings = [];
+    
+    public static function join(Player $player) {
+        if (!in_array($player, self::$matchings)) {
+            self::$matches[] = $player;
+            return true;
+        }
+        return false;
+    }
+    
+    public static function matching() {
+        foreach (self::$matchings as $player) {
+            if ($player instanceof Player) {
+                if ($player->isOnline()) {
+                    $this->getOfflineArena()
+                }
+            }
+        }
+    }
+    
+    public function getArenas() {}
+    
+    public function getOfflineArena() {
+        
+    }
+    
+    public function getOnlineArena() {
+        
+    }
+    
+}
