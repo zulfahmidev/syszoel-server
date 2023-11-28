@@ -5,8 +5,10 @@ namespace SysCore\Utils;
 use SysCore\Main;
 
 class API {
-
-  private static $baseUrl = "http://localhost:8080";
+  
+  private static function getBaseUrl() {
+      return Main::getInstance()->getConfig()->get("backend_url");
+  }
 
   public static function get($url, $body = []) {
     $context  = stream_context_create([
@@ -18,7 +20,7 @@ class API {
     ]);
     
     // Eksekusi POST request dan dapatkan respons
-    $response = file_get_contents(self::$baseUrl . $url, false, $context);
+    $response = file_get_contents(self::getBaseUrl() . $url, false, $context);
 
     return json_decode($response, true);
   }
@@ -33,7 +35,7 @@ class API {
     ]);
     
     // Eksekusi POST request dan dapatkan respons
-    $response = file_get_contents(self::$baseUrl . $url, false, $context);
+    $response = file_get_contents(self::getBaseUrl() . $url, false, $context);
 
     return json_decode($response, true);
   }

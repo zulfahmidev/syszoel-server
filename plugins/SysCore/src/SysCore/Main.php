@@ -36,7 +36,7 @@ class Main extends PluginBase {
     public function onEnable() : void {
         self::$instance = $this;
     
-        //     PlayerPermission::register();
+        $this->saveConfig();
         $this->initDirs();
         PPerms::registerPermissions();
         PRank::loadRanks();
